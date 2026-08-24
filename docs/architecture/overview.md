@@ -142,10 +142,5 @@ Payments are processed through Wompi through Vendure's payment architecture.
 
 ## 5. Architectural Principles
 
-1. Keep the frontend independent from the Foundation.
-2. Prefer Vendure native capabilities over custom implementations.
-3. Keep infrastructure standardized across stores.
-4. Avoid unnecessary infrastructure complexity.
-5. Keep store-specific requirements isolated from the Foundation.
-6. Do not introduce new technologies when the Standard Stack already provides an appropriate solution.
-7. Significant architectural changes must be documented and approved.
+Architectural rules are defined in `CLAUDE.md` (Rules) and in the accepted ADRs
+under `docs/decisions/`. They are not repeated here.

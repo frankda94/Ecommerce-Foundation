@@ -41,24 +41,26 @@ New Store → Production
 
 ## 3. Standard Stack
 
-| Layer            | Technology         |
-| ---------------- | ------------------ |
-| Commerce         | Vendure            |
-| Language         | TypeScript         |
-| Database         | PostgreSQL         |
-| Cache / Jobs     | Redis              |
-| Storage          | Cloudflare R2      |
-| Email            | Resend             |
-| Payments         | Wompi              |
-| Containerization | Docker             |
-| Reverse Proxy    | Caddy              |
-| CDN / DNS / Sec. | Cloudflare         |
-| CI/CD            | GitHub Actions     |
-| Deployment       | Oracle Cloud ARM64 |
-| Analytics        | Umami Cloud        |
-| AI Development   | Claude Code        |
+| Layer                | Technology                     |
+| -------------------- | ------------------------------ |
+| Commerce             | Vendure                        |
+| Language             | TypeScript                     |
+| Database             | PostgreSQL                     |
+| Cache / Jobs         | Redis                          |
+| Storage              | Cloudflare R2                  |
+| Email                | Resend                         |
+| Payments             | Wompi                          |
+| Containerization     | Docker                         |
+| Reverse Proxy        | Caddy                          |
+| CDN / DNS / Security | Cloudflare                     |
+| CI/CD                | GitHub Actions (ubuntu-24.04-arm) |
+| Container Registry   | GHCR                           |
+| Deployment           | Oracle Cloud Always Free ARM64 |
+| Analytics            | Umami Cloud                    |
+| AI Development       | Claude Code                    |
 
 The standard stack must not be changed without explicit approval.
+Rationale and full record: `docs/decisions/ADR-002-standard-stack.md` (source of truth).
 
 ## 4. Architecture
 
@@ -90,7 +92,8 @@ Detailed architecture: docs/architecture/
 
 - All source code must be written in English.
 - Code identifiers must be written in English.
-- Comments must be written in Spanish just if the code is very very important.
+- Comments must be written in English.
+- Comment only non-obvious logic; do not comment what the code already states.
 - Documentation must be concise, precise and actionable.
 - Avoid unnecessary documentation.
 - Do not introduce dependencies without justification.
@@ -116,4 +119,5 @@ To implement new features follow `docs/development/workflow.md`
 - **Development** → `docs/development/`
 - **Features** → `docs/features/`
 - **Integrations** → `docs/integrations/`
--
+
+Full index: `docs/README.md`

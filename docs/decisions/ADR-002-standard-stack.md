@@ -28,7 +28,8 @@ The Foundation will use the following standard stack:
 | Containerization     | Docker                         |
 | Reverse Proxy        | Caddy                          |
 | CDN / DNS / Security | Cloudflare                     |
-| CI/CD                | GitHub Actions                 |
+| CI/CD                | GitHub Actions (ubuntu-24.04-arm) |
+| Container Registry   | GHCR                           |
 | Deployment           | Oracle Cloud Always Free ARM64 |
 | Analytics            | Umami Cloud                    |
 | AI Development       | Claude Code                    |
