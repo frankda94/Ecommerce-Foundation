@@ -31,6 +31,9 @@ The Foundation will use the following standard stack:
 | CI/CD                | GitHub Actions (ubuntu-24.04-arm) |
 | Container Registry   | GHCR                           |
 | Deployment           | Oracle Cloud Always Free ARM64 |
+| Uptime Monitoring    | UptimeRobot                    |
+| Cron Monitoring      | Healthchecks.io                |
+| Alerts               | Telegram                       |
 | Analytics            | Umami Cloud                    |
 | AI Development       | Claude Code                    |
 

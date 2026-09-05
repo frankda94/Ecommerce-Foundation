@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.env
+.vendure
+coverage
+tmp
+data
+static/assets
+static/email/output
+docs
+*.md
+docker-compose*.yml
+Dockerfile
+.dockerignore

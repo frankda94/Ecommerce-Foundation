@@ -1,0 +1,29 @@
+# Reverse proxy and TLS (ADR-005). Caddy obtains and renews the certificate on its
+# own; nothing else on the host is reachable from the internet.
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Vendure. `/health` stays public and unauthenticated so UptimeRobot can probe the
+	# whole chain from outside (ADR-009).
+	handle /shop-api* {
+		reverse_proxy vendure-server:3000
+	}
+	handle /admin-api* {
+		reverse_proxy vendure-server:3000
+	}
+	handle /admin* {
+		reverse_proxy vendure-server:3000
+	}
+	handle /assets* {
+		reverse_proxy vendure-server:3000
+	}
+	handle /health {
+		reverse_proxy vendure-server:3000
+	}
+
+	# Everything else is the storefront.
+	handle {
+		reverse_proxy {$STOREFRONT_UPSTREAM:storefront:3000}
+	}
+}

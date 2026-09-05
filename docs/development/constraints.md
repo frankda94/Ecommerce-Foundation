@@ -19,7 +19,45 @@ loses every upgrade and every fix upstream.
 Prices, totals, stock, discounts, permissions and order state are decided on the server.
 Anything arriving from the client is input to validate, never a fact to accept.
 
-## 4. Errors follow a defined taxonomy
+## 4. Money is stored in minor units
+
+Vendure stores every price as an integer and divides by 100 when formatting. This
+applies to COP as well, even though Colombian prices are not written with cents.
+
+`$15.000 COP` is stored as `1500000`, not `15000`.
+
+Never do arithmetic on formatted values, and never store a price already divided.
+
+Every payable total is a multiple of 100, because Wompi rejects an amount that does not
+end in `00`. `CopMoneyStrategy` (`src/config/money.ts`) enforces this; the payment
+handler sends `order.totalWithTax` to `amount_in_cents` unchanged. See ADR-010.
+
+Risk:
+
+- **The `int` column caps any value at ~$21.474.836 COP.** Passing it requires
+  `BigIntMoneyStrategy` and a schema migration.
+
+## 5. Migrations
+
+Foundation migrations live in `src/migrations/foundation/`, store migrations in
+`src/migrations/store/`. Both are applied through the single `migrations` table.
+
+- `migration:generate` applies pending migrations before diffing. TypeORM compares
+  every entity against the database, so generating with a Foundation migration pending
+  copies that migration into the store's own file. Both then run and the second fails.
+- A store never alters a Foundation table. It adds its own entities through its plugin,
+  and uses custom fields for extra data on `order`, `customer` or `product`.
+- Store tables and custom fields carry a per-store prefix. A store table named the same
+  as one the Foundation adds later collides at deploy time.
+- Foundation tables are a public API. Renaming or dropping a column in a minor version
+  breaks every store using it.
+
+Risks:
+
+- **The `migrations` table is shared**, so a Foundation migration cannot be reverted in a store on its own. Rollback means restoring the dump (ADR-007).
+- **A name collision is not caught by the compiler.** It surfaces when the migration runs.
+
+## 6. Errors follow a defined taxonomy
 
 | Category | Meaning | Handling |
 | --- | --- | --- |

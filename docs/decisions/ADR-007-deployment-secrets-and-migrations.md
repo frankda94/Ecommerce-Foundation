@@ -16,6 +16,10 @@ migrations run.
 
 - Never baked into the image. Never committed to the repository.
 - Each environment holds its own values.
+- The runner is GitHub-hosted (ADR-002), not self-hosted on the target server, so it
+  cannot read the secrets locally on the host. They reach the server over SSH, pushed
+  by the deploy job as part of the same step that writes the `.env` file consumed by
+  Compose.
 
 **Deployment** is triggered from GitHub Actions. The host pulls a pinned image tag
 from GHCR and restarts the stack.
@@ -49,3 +53,6 @@ Risks accepted:
   container, two instances race to migrate the same database.
 - **Anyone with write access to the repository can exfiltrate the secrets** through a
   workflow. Environment protection rules and reviewers are the only control.
+- **The SSH deploy key carries the same blast radius as the secrets it delivers.**
+  It must be dedicated to deployment, restricted to the deploy command, and rotated
+  like any other credential in the Environment.

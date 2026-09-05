@@ -1,0 +1,40 @@
+# Development dependencies only. The application runs on the host with
+# `npm run dev:server` and `npm run dev:worker`.
+# Production topology is defined in ADR-005 and lives in a separate file.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-vendure}
+      POSTGRES_USER: ${DB_USERNAME:-vendure}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vendure}
+    ports:
+      - '127.0.0.1:${DB_PORT:-5432}:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-vendure} -d ${DB_NAME:-vendure}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # AOF only, no scheduled snapshot, no eviction. See ADR-008.
+    command: ['redis-server', '--appendonly', 'yes', '--save', '', '--maxmemory-policy', 'noeviction']
+    ports:
+      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:

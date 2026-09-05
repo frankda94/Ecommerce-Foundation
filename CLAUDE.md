@@ -41,23 +41,26 @@ New Store → Production
 
 ## 3. Standard Stack
 
-| Layer                | Technology                     |
-| -------------------- | ------------------------------ |
-| Commerce             | Vendure                        |
-| Language             | TypeScript                     |
-| Database             | PostgreSQL                     |
-| Cache / Jobs         | Redis                          |
-| Storage              | Cloudflare R2                  |
-| Email                | Resend                         |
-| Payments             | Wompi                          |
-| Containerization     | Docker                         |
-| Reverse Proxy        | Caddy                          |
-| CDN / DNS / Security | Cloudflare                     |
+| Layer                | Technology                        |
+| -------------------- | --------------------------------- |
+| Commerce             | Vendure                           |
+| Language             | TypeScript                        |
+| Database             | PostgreSQL                        |
+| Cache / Jobs         | Redis                             |
+| Storage              | Cloudflare R2                     |
+| Email                | Resend                            |
+| Payments             | Wompi                             |
+| Containerization     | Docker                            |
+| Reverse Proxy        | Caddy                             |
+| CDN / DNS / Security | Cloudflare                        |
 | CI/CD                | GitHub Actions (ubuntu-24.04-arm) |
-| Container Registry   | GHCR                           |
-| Deployment           | Oracle Cloud Always Free ARM64 |
-| Analytics            | Umami Cloud                    |
-| AI Development       | Claude Code                    |
+| Container Registry   | GHCR                              |
+| Deployment           | Oracle Cloud Always Free ARM64    |
+| Uptime Monitoring    | UptimeRobot                       |
+| Cron Monitoring      | Healthchecks.io                   |
+| Alerts               | Telegram                          |
+| Analytics            | Umami Cloud                       |
+| AI Development       | Claude Code                       |
 
 The standard stack must not be changed without explicit approval.
 Rationale and full record: `docs/decisions/ADR-002-standard-stack.md` (source of truth).
@@ -121,3 +124,16 @@ To implement new features follow `docs/development/workflow.md`
 - **Integrations** → `docs/integrations/`
 
 Full index: `docs/README.md`
+
+Rules:
+
+- Do not duplicate content across documents; link to the owning document instead.
+- The code explains **how** it works; documentation explains **why** it works that way
+  and how to work with it.
+- One decision per ADR. An ADR records only its own context, decision and consequences;
+  whatever follows from another decision belongs to that ADR and is linked from this one.
+- A committed ADR is never edited to reverse a decision. Set its status to
+  `Superseded by ADR-<n>` and record the new decision in a new ADR. An ADR that has not
+  been committed yet is a draft and may be edited or replaced freely.
+- Do not create a document just because a folder exists. Folders are empty until there
+  is something worth writing. Risk of ignoring this: dozens of Markdown files that duplicate the code, go stale, and get loaded as context in every session without adding value.

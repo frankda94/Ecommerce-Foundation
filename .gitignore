@@ -22,8 +22,14 @@ pnpm-debug.log*
 # Runtime and local data
 coverage/
 tmp/
-static/
 data/
+
+# Vendure local cache
+.vendure/
+
+# Runtime asset and email output, not the email templates
+static/assets/
+static/email/output/
 
 # Editors and OS
 .DS_Store

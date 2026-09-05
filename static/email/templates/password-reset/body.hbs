@@ -1,0 +1,24 @@
+{{> header title="Restablecer tu contraseña" }}
+
+<mj-section background-color="#fafafa">
+    <mj-column>
+        <mj-text color="#525252">
+            Alguien solicitó una nueva contraseña para tu cuenta.
+        </mj-text>
+
+        <mj-button font-family="Helvetica"
+                   background-color="#f45e43"
+                   color="white"
+                   href="{{ passwordResetUrl }}?token={{ passwordResetToken }}">
+            Restablecer contraseña
+        </mj-button>
+
+        <mj-text color="#525252">
+        Si no fuiste tú, puedes ignorar este correo. No se ha hecho ningún cambio en tu cuenta.
+        </mj-text>
+
+    </mj-column>
+</mj-section>
+
+
+{{> footer }}

@@ -25,6 +25,11 @@ Backups use restic, encrypted, to Cloudflare R2, in a bucket separate from asset
 - The restic repository key is stored outside the host. Losing the host must not mean
   losing access to the backups.
 - Restores are tested. A backup that has never been restored is not a backup.
+- Confirming that the backup actually ran, and alerting on a failed `restic check`, is
+  monitoring and lives in [ADR-009](ADR-009-monitoring-and-alerting.md).
+- Redis is not backed up (ADR-008), so a restore brings back no jobs. Recovering them is
+  a manual step of the restore: relaunch the reindex from the Admin UI, and review the
+  orders between the dump and the incident for confirmation emails that never went out.
 
 ## Consequences
 

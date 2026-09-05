@@ -22,14 +22,14 @@ The frontend is external to the Foundation and may vary for each store.
                         ▼
               Vendure Commerce Core
                         │
-      ┌─────────────────┼─────────────────┐
-      │                 │                 │
-      ▼                 ▼                 ▼
- PostgreSQL           Redis       External Services
-                                          │
-                              ┌───────────┼───────────┐
-                              ▼           ▼           ▼
-                        Cloudflare R2  Resend       Wompi
+              ┌─────────┼─────────┐
+              │         │         │
+              ▼         ▼         ▼
+         PostgreSQL     Redis   External Services
+                                  │
+                      ┌───────────┼───────────┐
+                      ▼           ▼           ▼
+                Cloudflare R2  Resend       Wompi
 ```
 
 ## 3. Main Components
@@ -65,10 +65,9 @@ Commerce data must be persisted in PostgreSQL unless a specific architectural de
 
 ### 3.4 Redis
 
-Redis is part of the standard infrastructure.
-It may be used for caching, background jobs and other use cases where it provides a clear technical benefit.
-
-**Redis should not be introduced into a feature without a defined need.**
+Redis holds the job queue and the cache, including session data. It is not a system of
+record: nothing that must survive a restore may live only there.
+Rationale, rules and risks: `docs/decisions/ADR-008-job-queue-and-cache-backend.md`.
 
 ### 3.5 Cloudflare R2
 
@@ -131,9 +130,9 @@ Analytics should remain independent from the commerce backend.
             ▼               ▼
          Vendure        Services
             │
-      ┌─────┴─────┐
-      ▼           ▼
- PostgreSQL     Redis
+       ┌────┴────┐
+       ▼         ▼
+  PostgreSQL   Redis
 ```
 
 Persistent product assets are stored in Cloudflare R2.

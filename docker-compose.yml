@@ -1,0 +1,169 @@
+# Production topology (ADR-005). Images are pulled from GHCR with a pinned tag
+# (ADR-004) and secrets are injected at deploy time (ADR-007).
+#
+# `vendure-server` and `vendure-worker` are the same image with a different command.
+
+x-app-env: &app-env
+  # Without this the application runs in development mode: open playgrounds and
+  # emails written to disk instead of being sent.
+  APP_ENV: production
+  PORT: 3000
+  WORKER_HEALTH_PORT: 3020
+  COOKIE_SECRET: ${COOKIE_SECRET}
+  SUPERADMIN_USERNAME: ${SUPERADMIN_USERNAME:-superadmin}
+  SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD}
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_NAME: ${DB_NAME:-vendure}
+  DB_USERNAME: ${DB_USERNAME:-vendure}
+  DB_PASSWORD: ${DB_PASSWORD}
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  R2_BUCKET: ${R2_BUCKET}
+  R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+  R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+  R2_ENDPOINT: ${R2_ENDPOINT}
+  R2_PUBLIC_URL: ${R2_PUBLIC_URL}
+  RESEND_API_KEY: ${RESEND_API_KEY}
+  EMAIL_FROM: ${EMAIL_FROM}
+  STOREFRONT_URL: ${STOREFRONT_URL}
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    cpus: 0.5
+    mem_limit: 256m
+    # The only service exposed to the internet (ADR-005).
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      DOMAIN: ${DOMAIN}
+      STOREFRONT_UPSTREAM: ${STOREFRONT_UPSTREAM:-storefront:3000}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - vendure-server
+      - storefront
+    networks: [edge]
+
+  storefront:
+    # The slot and its limits belong to the Foundation (ADR-005); the image is built
+    # from the store's own frontend repository (ADR-001).
+    image: ${STOREFRONT_IMAGE}
+    restart: unless-stopped
+    cpus: 1.5
+    mem_limit: 1.5g
+    networks: [edge]
+
+  vendure-server:
+    image: ${STORE_IMAGE}
+    restart: unless-stopped
+    command: ['npm', 'run', 'start:server']
+    cpus: 1.5
+    mem_limit: 2g
+    environment: *app-env
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # The only service on both networks: nothing reachable from the internet has a
+    # route to PostgreSQL or Redis.
+    networks: [edge, data]
+
+  vendure-worker:
+    image: ${STORE_IMAGE}
+    restart: unless-stopped
+    command: ['npm', 'run', 'start:worker']
+    cpus: 0.75
+    mem_limit: 1.5g
+    environment: *app-env
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3020/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      # The server owns the migrations, so it must be up before the worker.
+      vendure-server:
+        condition: service_healthy
+    networks: [data]
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    cpus: 1.0
+    mem_limit: 2g
+    environment:
+      POSTGRES_DB: ${DB_NAME:-vendure}
+      POSTGRES_USER: ${DB_USERNAME:-vendure}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-vendure} -d ${DB_NAME:-vendure}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [data]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    cpus: 0.25
+    mem_limit: 2g
+    # AOF only, no scheduled snapshot, no eviction, and a memory ceiling at half the
+    # container limit. See ADR-008.
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--save',
+        '',
+        '--maxmemory',
+        '1gb',
+        '--maxmemory-policy',
+        'noeviction',
+        '--requirepass',
+        '${REDIS_PASSWORD}',
+      ]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "$$REDIS_PASSWORD" ping | grep -q PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks: [data]
+
+networks:
+  edge:
+    driver: bridge
+  data:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  caddy-data:
+  caddy-config:
